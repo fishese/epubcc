@@ -1,4 +1,5 @@
 import JSZip from "jszip";
+import { downloadName } from "./convert.js";
 import { epubToEpub, txtToEpub } from "./epub.js";
 
 const files = document.querySelector("#files");
@@ -30,7 +31,7 @@ go.addEventListener("click", async () => {
       const epub = file.name.toLowerCase().endsWith(".txt")
         ? await txtToEpub(file.name, bytes, options)
         : await epubToEpub(bytes, options);
-      const name = file.name.replace(/\.(txt|epub)$/i, "") + ".epub";
+      const name = downloadName(file.name, options.mode);
       const blob = new Blob([epub], { type: "application/epub+zip" });
       results.push({ name, blob });
       const link = document.createElement("a");
@@ -53,6 +54,6 @@ zipButton.addEventListener("click", async () => {
   const blob = await zip.generateAsync({ type: "blob" });
   const link = document.createElement("a");
   link.href = URL.createObjectURL(blob);
-  link.download = "fanzi-epub.zip";
+  link.download = "epubcc.zip";
   link.click();
 });

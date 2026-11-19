@@ -7,6 +7,15 @@ const CONVERTERS = {
 };
 
 export function convertText(text, mode) {
-  const convert = CONVERTERS[mode] || CONVERTERS.tw;
+  const convert = CONVERTERS[mode] || CONVERTERS.t;
   return convert(text);
+}
+
+export function downloadName(filename, mode) {
+  const base = filename.replace(/\.(txt|epub)$/i, "");
+  const converted = convertText(base, mode)
+    .replace(/[\\/:*?"<>|]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return `${converted || "book"}.epub`;
 }

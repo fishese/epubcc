@@ -1,8 +1,15 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { CHAPTER_SEPARATOR, splitChapters } from "./chapters.js";
-import { convertText } from "./convert.js";
+import { convertText, downloadName } from "./convert.js";
 import { horizontalPunct, verticalParts, verticalPunct } from "./punct.js";
+
+test("default traditional keeps phrasing", () => {
+  const out = convertText("后来王后说后来", "t");
+  assert.equal(out, "後來王后說後來");
+  assert.equal(downloadName("后来王后.txt", "t"), "後來王后.epub");
+  assert.equal(downloadName("Notes.epub", "t"), "Notes.epub");
+});
 
 test("phrase conversion keeps 王后 and writes 後來", () => {
   const out = convertText("后来王后说后来", "tw");
