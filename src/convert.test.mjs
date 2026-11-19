@@ -82,3 +82,24 @@ test("a single Latin letter stays upright and a word stays sideways", () => {
     { text: "Hello" },
   ]);
 });
+
+test("numbers of one to three digits stay upright and longer numbers go sideways", () => {
+  assert.deepEqual(verticalParts("3天12月365日2008年1234567"), [
+    { text: "3", upright: true },
+    { text: "天" },
+    { text: "12", upright: true },
+    { text: "月" },
+    { text: "365", upright: true },
+    { text: "日" },
+    { text: "2008" },
+    { text: "年" },
+    { text: "1234567" },
+  ]);
+  assert.deepEqual(verticalParts(verticalPunct("共1,234,567与1，234，567人")), [
+    { text: "共" },
+    { text: "1,234,567" },
+    { text: "与" },
+    { text: "1\uFE10234\uFE10567" },
+    { text: "人" },
+  ]);
+});

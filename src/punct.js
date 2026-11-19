@@ -52,22 +52,36 @@ export function verticalPunct(text) {
   });
 }
 
-const LATIN_WORD = /[A-Za-z\uFF21-\uFF3A\uFF41-\uFF5A]+(?:['’\-][A-Za-z\uFF21-\uFF3A\uFF41-\uFF5A]+)*/g;
+const DIGIT = "[0-9\\uFF10-\\uFF19]";
+const GROUPED_NUMBER = `${DIGIT}{1,3}(?:[,，\\uFE10]${DIGIT}{1,3})+`;
+const LATIN = "[A-Za-z\\uFF21-\\uFF3A\\uFF41-\\uFF5A]";
+const TOKEN = new RegExp(`${GROUPED_NUMBER}|${DIGIT}+|${LATIN}+(?:['’\\-]${LATIN}+)*`, "g");
 
 function letterCount(word) {
   return [...word.replace(/['’\-]/g, "")].length;
 }
 
-/** One Latin letter stays upright; a word of two or more stays in the sideways run. */
+function digitCount(token) {
+  return [...token.replace(/[^0-9\uFF10-\uFF19]/g, "")].length;
+}
+
+function staysUpright(token) {
+  if (/[A-Za-z\uFF21-\uFF3A\uFF41-\uFF5A]/.test(token)) return letterCount(token) === 1;
+  if (/[,，\uFE10]/.test(token)) return false;
+  const digits = digitCount(token);
+  return digits >= 1 && digits <= 3;
+}
+
+/** One Latin letter, or a number of 1–3 digits, stays upright. Longer words and numbers go sideways. */
 export function verticalParts(text) {
   return protect(text, (value) => {
     const parts = [];
     let last = 0;
-    for (const match of value.matchAll(LATIN_WORD)) {
+    for (const match of value.matchAll(TOKEN)) {
       if (match.index > last) parts.push({ text: value.slice(last, match.index) });
-      const word = match[0];
-      parts.push(letterCount(word) === 1 ? { text: word, upright: true } : { text: word });
-      last = match.index + match[0].length;
+      const token = match[0];
+      parts.push(staysUpright(token) ? { text: token, upright: true } : { text: token });
+      last = match.index + token.length;
     }
     if (last < value.length) parts.push({ text: value.slice(last) });
     return parts;
