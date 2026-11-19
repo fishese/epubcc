@@ -1,3 +1,7 @@
 node_modules
 dist
+sample
 .DS_Store
+sample/*
+*.epub
+*.txt

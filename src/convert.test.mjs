@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { CHAPTER_SEPARATOR, splitChapters } from "./chapters.js";
 import { convertText, downloadName } from "./convert.js";
+import { decodeText } from "./text-decode.js";
 import { horizontalPunct, verticalParts, verticalPunct } from "./punct.js";
 
 test("default traditional keeps phrasing", () => {
@@ -9,6 +10,12 @@ test("default traditional keeps phrasing", () => {
   assert.equal(out, "後來王后說後來");
   assert.equal(downloadName("后来王后.txt", "t"), "後來王后.epub");
   assert.equal(downloadName("Notes.epub", "t"), "Notes.epub");
+});
+
+test("utf-16 text is not misread before conversion", () => {
+  const encoded = new Uint8Array(Buffer.from("\uFEFF后来王后", "utf16le"));
+  assert.equal(decodeText(encoded), "后来王后");
+  assert.equal(convertText(decodeText(encoded), "t"), "後來王后");
 });
 
 test("phrase conversion keeps 王后 and writes 後來", () => {

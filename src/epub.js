@@ -1,5 +1,6 @@
 import JSZip from "jszip";
 import { splitChapters } from "./chapters.js";
+import { decodeText } from "./text-decode.js";
 import { convertText } from "./convert.js";
 import { horizontalPunct, verticalParts, verticalPunct, VERTICAL_CSS } from "./punct.js";
 
@@ -151,15 +152,6 @@ function walk(node, options) {
   for (const child of [...node.childNodes]) walk(child, options);
 }
 
-function decodeText(bytes) {
-  const utf8 = new TextDecoder("utf-8", { fatal: true });
-  try {
-    return utf8.decode(bytes);
-  } catch {
-    return new TextDecoder("gb18030").decode(bytes);
-  }
-}
-
 async function packEpub(title, chapters, punct) {
   const zip = new JSZip();
   zip.file("mimetype", "application/epub+zip", { compression: "STORE" });
@@ -200,5 +192,10 @@ async function packEpub(title, chapters, punct) {
 <spine${progression}>${spine.join("")}</spine>
 </package>`,
   );
-  return zip.generateAsync({ type: "uint8array", mimeType: "application/epub+zip" });
+  return zip.generateAsync({
+    type: "uint8array",
+    compression: "DEFLATE",
+    compressionOptions: { level: 9 },
+    mimeType: "application/epub+zip",
+  });
 }
