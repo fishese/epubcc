@@ -1,0 +1,8 @@
+{
+  "name": "繁字批量",
+  "short_name": "繁字",
+  "start_url": "/epubcc/",
+  "display": "standalone",
+  "background_color": "#f6f1e7",
+  "theme_color": "#1c1915"
+}

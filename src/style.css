@@ -1,0 +1,15 @@
+:root { color: #1c1915; background: #f6f1e7; font-family: "Iowan Old Style", "Palatino Linotype", Palatino, serif; }
+body { margin: 0; }
+main { max-width: 40rem; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+h1 { font-weight: 500; font-size: 2rem; margin: 0 0 0.5rem; }
+.lead, .note { line-height: 1.5; }
+label { display: block; margin: 1rem 0; }
+select, button { font: inherit; }
+select { margin-left: 0.5rem; }
+.drop { border: 1px dashed #8a8175; padding: 1.25rem; text-align: center; }
+button { background: #1c1915; color: #f6f1e7; border: 0; padding: 0.7rem 1rem; }
+button[disabled] { opacity: 0.4; }
+#zip { margin-top: 1rem; background: transparent; color: #1c1915; border: 1px solid #1c1915; }
+li { margin: 0.6rem 0; }
+a { color: inherit; }
+.error { color: #8a2b2b; }

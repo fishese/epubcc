@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#1c1915" />
+    <title>繁字批量</title>
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="stylesheet" href="./src/style.css" />
+  </head>
+  <body>
+    <main>
+      <h1>繁字批量</h1>
+      <p class="lead">把多個 TXT、EPUB 轉成繁體 EPUB。用詞按詞組轉換，所以「後來」不會寫成「后來」，「王后」也不會寫成「王後」。檔案只在這台裝置上處理。</p>
+      <label>轉換
+        <select id="mode">
+          <option value="tw" selected>台灣繁體（用詞）</option>
+          <option value="t">繁體（保留用詞）</option>
+          <option value="hk">香港繁體</option>
+        </select>
+      </label>
+      <label>TXT 章節
+        <select id="chapters">
+          <option value="auto" selected>自動：一行三十個…，否則第…章／回／節／卷／話</option>
+          <option value="ellipsis">只認小說匯出的…分隔</option>
+          <option value="heading">只認第…章、回、節、卷、部、集、篇、話</option>
+        </select>
+      </label>
+      <label>標點
+        <select id="punct">
+          <option value="none">不改標點</option>
+          <option value="horizontal" selected>橫排：「」『』</option>
+          <option value="vertical">直排：﹁﹂﹃﹄，標點置中，單個字母直立</option>
+        </select>
+      </label>
+      <p class="note">「第…章」必須單獨成行，章名可以接在後面，例如「第一章 啟程」。也認回、節、卷、部、集、篇、話、幕。</p>
+      <label class="drop">
+        <input id="files" type="file" accept=".txt,.epub,text/plain,application/epub+zip" multiple />
+        選擇多個 TXT 或 EPUB
+      </label>
+      <button id="go" type="button" disabled>轉換</button>
+      <ul id="list"></ul>
+      <button id="zip" type="button" hidden>下載全部 zip</button>
+    </main>
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>
