@@ -18,6 +18,18 @@ test("utf-16 text is not misread before conversion", () => {
   assert.equal(convertText(decodeText(encoded), "t"), "後來王后");
 });
 
+test("other unicode and common Chinese encodings decode", () => {
+  assert.equal(decodeText(Uint8Array.from([0xef, 0xbb, 0xbf, 0xe5, 0x90, 0x8e, 0xe6, 0x9d, 0xa5])), "后来");
+  assert.equal(decodeText(Uint8Array.from([0xfe, 0xff, 0x54, 0x0e, 0x67, 0x65])), "后来");
+  assert.equal(decodeText(Uint8Array.from([0x0e, 0x54, 0x65, 0x67, 0x8b, 0x73])), "后来王");
+  assert.equal(
+    decodeText(Uint8Array.from([0xff, 0xfe, 0x00, 0x00, 0x0e, 0x54, 0x00, 0x00, 0x65, 0x67, 0x00, 0x00])),
+    "后来",
+  );
+  assert.equal(decodeText(Uint8Array.from([0xba, 0xf3, 0xc0, 0xb4, 0xcd, 0xf5, 0xba, 0xf3])), "后来王后");
+  assert.equal(decodeText(Uint8Array.from([0xab, 0xe1, 0xa8, 0xd3, 0xa4, 0xfd, 0xa6, 0x5a])), "後來王后");
+});
+
 test("phrase conversion keeps 王后 and writes 後來", () => {
   const out = convertText("后来王后说后来", "tw");
   assert.equal(out, "後來王后說後來");
