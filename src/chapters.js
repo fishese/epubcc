@@ -37,7 +37,35 @@ export function splitChapters(text, fallbackTitle, mode = "auto") {
   if (mode === "heading") return splitHeadings(normalized, fallbackTitle);
   names.push(chapter);
   bodies.push(normalized.slice(bodyStart).trim());
-  return names.map((title, i) => ({ title, body: bodies[i] }));
+  return keepChaptersWithText(names.map((title, i) => ({ title, body: bodies[i] })));
+}
+
+// A separator entry with no body is a contents-list line. Keep the line in the
+// previous section. A chapter with even one line of text stays, however short.
+function keepChaptersWithText(chapters) {
+  const kept = [];
+  for (const chapter of chapters) {
+    if (chapter.body.trim()) {
+      kept.push(chapter);
+      continue;
+    }
+    if (!kept.length) kept.push({ title: "前言", body: chapter.title });
+    else kept[kept.length - 1].body = `${kept[kept.length - 1].body}\n${chapter.title}`.trim();
+  }
+  return kept;
+}
+
+function isHeading(line) {
+  return line.length > 0 && line.length <= 40 && HEADING.test(line);
+}
+
+function hasTextBeforeNextHeading(lines, index) {
+  for (let i = index + 1; i < lines.length; i++) {
+    const trimmed = lines[i].trim();
+    if (!trimmed) continue;
+    return !isHeading(trimmed);
+  }
+  return false;
 }
 
 function splitHeadings(text, fallbackTitle) {
@@ -51,14 +79,20 @@ function splitHeadings(text, fallbackTitle) {
     chapters.push({ title: title || fallbackTitle || "正文", body });
     buf = [];
   };
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (trimmed.length > 0 && trimmed.length <= 40 && HEADING.test(trimmed)) {
+  for (let i = 0; i < lines.length; i++) {
+    const trimmed = lines[i].trim();
+    // Chapter after chapter, with nothing between them, is a list. A heading
+    // that has any text before the next heading is a real chapter.
+    if (isHeading(trimmed) && !hasTextBeforeNextHeading(lines, i)) {
+      buf.push(lines[i]);
+      continue;
+    }
+    if (isHeading(trimmed)) {
       flush();
       title = trimmed;
-    } else {
-      buf.push(line);
+      continue;
     }
+    buf.push(lines[i]);
   }
   flush();
   if (chapters.length === 0) chapters.push({ title: fallbackTitle || "正文", body: text.trim() });

@@ -124,12 +124,19 @@ function convertHtml(html, options) {
   return new XMLSerializer().serializeToString(root);
 }
 
+function plainLabel(node) {
+  for (let parent = node.parentNode; parent; parent = parent.parentNode) {
+    if (parent.localName === "nav" || parent.localName === "title") return true;
+  }
+  return false;
+}
+
 function walk(node, options) {
   if (!node) return;
   if (node.nodeType === 1 && SKIP.has(node.localName)) return;
   if (node.nodeType === 3) {
     const value = transform(node.nodeValue, options.mode, options.punct);
-    if (options.punct !== "vertical") {
+    if (options.punct !== "vertical" || plainLabel(node)) {
       node.nodeValue = value;
       return;
     }
@@ -171,7 +178,7 @@ async function packEpub(title, chapters, punct) {
     zip.file(`OEBPS/${href}`, page(chapter.title, chapter.html, punct));
     manifest.push(`<item id="${id}" href="${href}" media-type="application/xhtml+xml"/>`);
     spine.push(`<itemref idref="${id}"/>`);
-    navItems.push(`<li><a href="${href}">${inlineHtml(chapter.title, punct)}</a></li>`);
+    navItems.push(`<li><a href="${href}">${escapeXml(chapter.title)}</a></li>`);
   });
   zip.file(
     "OEBPS/nav.xhtml",

@@ -69,6 +69,40 @@ test("ellipsis mode leaves 第章 lines inside the chapter", () => {
   assert.match(chapters[0].body, /第一章/);
 });
 
+test("a chapter list with no text between entries is not a run of empty chapters", () => {
+  const listed = ["第一章 启程", "第二章 山路", "第三章 客栈"].join("\n\n");
+  const text = `${listed}\n\n第一章 启程\n走了\n\n第二章 山路\n停`;
+  for (const mode of ["auto", "heading"]) {
+    const chapters = splitChapters(text, "书", mode);
+    assert.deepEqual(
+      chapters.map((chapter) => chapter.title),
+      ["书", "第一章 启程", "第二章 山路"],
+      mode,
+    );
+    assert.match(chapters[0].body, /第三章 客栈/, mode);
+    assert.match(chapters[1].body, /走了/, mode);
+    assert.equal(chapters[2].body, "停", mode);
+  }
+});
+
+test("separator mode keeps a contents list out of the chapter sequence", () => {
+  const sep = CHAPTER_SEPARATOR;
+  const text = [`序`, sep, "第一章 启程", "", sep, "第二章 山路", sep, "第一章 启程", "走了", sep, "第二章 山路", "停"].join("\n");
+  for (const mode of ["auto", "ellipsis"]) {
+    const chapters = splitChapters(text, "书", mode);
+    assert.deepEqual(
+      chapters.map((chapter) => chapter.title),
+      ["前言", "第一章 启程", "第二章 山路"],
+      mode,
+    );
+    assert.match(chapters[0].body, /序/, mode);
+    assert.match(chapters[0].body, /第一章 启程/, mode);
+    assert.match(chapters[0].body, /第二章 山路/, mode);
+    assert.equal(chapters[1].body, "走了", mode);
+    assert.equal(chapters[2].body, "停", mode);
+  }
+});
+
 test("a bare chapter-number menu is not also the first page", async () => {
   const text = `序文在此\n\n1. 第 1 章：启程\n\n${CHAPTER_SEPARATOR}\n第 1 章\n正文\n\n${CHAPTER_SEPARATOR}\n第 2 章\n后文`;
   for (const chapters of ["ellipsis", "auto", "heading"]) {
@@ -84,6 +118,17 @@ test("a bare chapter-number menu is not also the first page", async () => {
     assert.match(html, /序文在此/, chapters);
     assert.equal(html.includes("<nav "), false, chapters);
   }
+});
+
+test("vertical navigation labels stay plain chapter names", async () => {
+  const text = `${CHAPTER_SEPARATOR}\n第 1 章\nA市正文\n\n${CHAPTER_SEPARATOR}\n第 12 章\n又来了`;
+  const epub = await txtToEpub("book.txt", Buffer.from(text), { mode: "t", punct: "vertical", chapters: "ellipsis" });
+  const zip = await JSZip.loadAsync(epub);
+  const nav = await zip.file("OEBPS/nav.xhtml").async("string");
+  const labels = [...nav.matchAll(/<a [^>]*>([\s\S]*?)<\/a>/g)].map((match) => match[1]);
+  assert.deepEqual(labels, ["第 1 章", "第 12 章"]);
+  const chapter = await zip.file("OEBPS/c1.xhtml").async("string");
+  assert.match(chapter, /<span class="lat1">A<\/span>/);
 });
 
 test("horizontal and vertical quotes", () => {
