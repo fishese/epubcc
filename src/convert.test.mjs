@@ -1,8 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import JSZip from "jszip";
 import { CHAPTER_SEPARATOR, splitChapters } from "./chapters.js";
 import { convertText, downloadName } from "./convert.js";
 import { decodeText } from "./text-decode.js";
+import { txtToEpub } from "./epub.js";
 import { horizontalPunct, verticalParts, verticalPunct } from "./punct.js";
 
 test("default traditional keeps phrasing", () => {
@@ -65,6 +67,23 @@ test("ellipsis mode leaves 第章 lines inside the chapter", () => {
   const chapters = splitChapters("第一章 不被切开\n正文", "书", "ellipsis");
   assert.equal(chapters.length, 1);
   assert.match(chapters[0].body, /第一章/);
+});
+
+test("a bare chapter-number menu is not also the first page", async () => {
+  const text = `序文在此\n\n1. 第 1 章：启程\n\n${CHAPTER_SEPARATOR}\n第 1 章\n正文\n\n${CHAPTER_SEPARATOR}\n第 2 章\n后文`;
+  for (const chapters of ["ellipsis", "auto", "heading"]) {
+    const epub = await txtToEpub("book.txt", Buffer.from(text), { mode: "t", punct: "none", chapters });
+    const zip = await JSZip.loadAsync(epub);
+    const opf = await zip.file("OEBPS/content.opf").async("string");
+    assert.equal(opf.includes('idref="nav"'), false, chapters);
+    const nav = await zip.file("OEBPS/nav.xhtml").async("string");
+    assert.match(nav, /<nav /, chapters);
+    const first = opf.match(/<itemref idref="([^"]+)"/)[1];
+    const href = opf.match(new RegExp(`id="${first}" href="([^"]+)"`))[1];
+    const html = await zip.file(`OEBPS/${href}`).async("string");
+    assert.match(html, /序文在此/, chapters);
+    assert.equal(html.includes("<nav "), false, chapters);
+  }
 });
 
 test("horizontal and vertical quotes", () => {

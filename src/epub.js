@@ -177,7 +177,8 @@ async function packEpub(title, chapters, punct) {
     "OEBPS/nav.xhtml",
     page("目錄", `<nav epub:type="toc" xmlns:epub="http://www.idpf.org/2007/ops"><ol>${navItems.join("")}</ol></nav>`, punct),
   );
-  spine.unshift(`<itemref idref="nav"/>`);
+  // The nav file is the reader menu. It is not a chapter: a menu of number-only
+  // titles would otherwise be the first pages, ahead of the front matter.
   const progression = punct === "vertical" ? ` page-progression-direction="rtl"` : "";
   zip.file(
     "OEBPS/content.opf",
