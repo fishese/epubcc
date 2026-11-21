@@ -34,10 +34,17 @@
         </select>
       </label>
       <p class="note">「第…章」必須單獨成行，章名可以接在後面，例如「第一章 啟程」。也認回、節、卷、部、集、篇、話、幕。</p>
-      <label class="drop">
+      <label class="drop" id="drop">
         <input id="files" type="file" accept=".txt,.epub,text/plain,application/epub+zip" multiple />
-        選擇多個 TXT 或 EPUB
+        <span class="drop-title">選擇多個 TXT 或 EPUB</span>
+        <span class="drop-hint">或拖放到這個頁面的任何位置</span>
       </label>
+      <div id="drop-shield" class="drop-shield" hidden aria-hidden="true">
+        <div class="drop-shield-frame">
+          <p class="drop-shield-title">放開以加入 TXT 或 EPUB</p>
+          <p class="drop-shield-hint">整個視窗都可以放開，檔案不會在瀏覽器中開啟</p>
+        </div>
+      </div>
       <button id="go" type="button" disabled>轉換</button>
       <ul id="list"></ul>
       <button id="zip" type="button" hidden>下載全部 zip</button>
